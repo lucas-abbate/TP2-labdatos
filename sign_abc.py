@@ -23,7 +23,10 @@ import seaborn as sns
 ### Explore Data
 data = pd.read_csv("emnist_letters_tp.csv", header=None, index_col=0)
 
-# data = data / sum(data. max(axis='index')) # Normalizo los datos
+# %%
+# print(data.max(axis='columns').sort_values(ascending=True))  # Todas las obs. tienen max = 255, asi que normalizarlo es dividir x 255
+# data = data / 255 # Normalizo los datos
+
 # %%######
 data.head()
 print(data.index.value_counts().sort_index())  # Balanceado
@@ -86,7 +89,7 @@ print(f"Hay {len(medias[medias < 1])} pixeles con intensidad media menor a 1")
 plot_medias = fx.show_image(
     medias.values,
     title="Intensidad Media de cada Pixel\n(entre todas las letras)",
-    vmax=255,
+    vmax=1,
 )
 
 # Viendo el grafico, practicamente se podrian descartar las 2 primeras y ultimas filas y columnas
@@ -100,7 +103,7 @@ print(f"Hay {len(medianas[medianas < 1])} pixeles con mediana menor a 1")
 plot_medianas = fx.show_image(
     medianas.values,
     title="Mediana de la Intensidad de cada Pixel\n(entre todas las letras)",
-    vmax=255,
+    vmax=1,
 )
 
 # Todas las letras tienen más pixeles vacíos que ocupados, tiene sentido
@@ -131,52 +134,36 @@ top_medianas.plot(
 ## Comparaciones entre letras
 # Comparemos medianas entre L, E, M y I
 
-# L
-L = data.loc["L"]
-L_media = L.mean()
-L_media = L_media.rename(
-    index={
-        k: k.replace("col_", "Col: ").replace("_row_", "\nFila: ")
-        for k in L_media.index
-    }
-)
-
-# E
-E = data.loc["E"]
-E_media = E.mean()
-E_media = E_media.rename(
-    index={
-        k: k.replace("col_", "Col: ").replace("_row_", "\nFila: ")
-        for k in E_media.index
-    }
-)
-
-# M
-M = data.loc["M"]
-M_media = M.mean()
-M_media = M_media.rename(
-    index={
-        k: k.replace("col_", "Col: ").replace("_row_", "\nFila: ")
-        for k in M_media.index
-    }
-)
-
-# N
-I = data.loc["I"]
-I_media = I.mean()
-I_media = I_media.rename(
-    index={
-        k: k.replace("col_", "Col: ").replace("_row_", "\nFila: ")
-        for k in I_media.index
-    }
-)
-
+medias_por_letra = []
+medianas_por_letra = []
+for letra in ["L", "E", "M", "I"]:
+    letra_data = data.loc[letra]
+    media_letra = letra_data.mean()
+    mediana_letra = letra_data.median()
+    media_letra = media_letra.rename(
+        index={
+            k: k.replace("col_", "Col: ").replace("_row_", "\nFila: ")
+            for k in media_letra.index
+        }
+    )
+    mediana_letra = mediana_letra.rename(
+        index={
+            k: k.replace("col_", "Col: ").replace("_row_", "\nFila: ")
+            for k in mediana_letra.index
+        }
+    )
+    medias_por_letra.append(media_letra)
+    medianas_por_letra.append(mediana_letra)
 
 # %%
-medias_por_letra = [L_media, I_media, M_media, E_media]
-for i, media in enumerate(medias_por_letra):
+for i in range(len(medias_por_letra)):
     fx.show_image(
         medias_por_letra[i].values,
+        title="Media de la Intensidad de cada Pixel - " + ["L", "N", "M", "E"][i],
+        vmax=255,
+    )
+    fx.show_image(
+        medianas_por_letra[i].values,
         title="Mediana de la Intensidad de cada Pixel - " + ["L", "N", "M", "E"][i],
         vmax=255,
     )
