@@ -67,3 +67,63 @@ def flip_rotate(image: np.array) -> np.array:
     image = np.fliplr(image)
     image = np.rot90(image)
     return image
+
+def matriz_conf_bin_multiclass(classes, y_test, y_pred):
+    '''
+    input:
+        classes: lista de categorias que podría tomar la predicción
+        y_test: series con las categorias reales de cada fila
+        y_pred: array con las categorías predecidas de cada fila
+        
+    output:
+        res: dataFrame de dimension nxn, n el numero de clases donde cada
+             res[i,j] representa cuántos "i" fueron predecidos como "j", con
+             i, j las categorias en las posiciones i, j de clases, respectivamente
+    '''
+    res = pd.DataFrame(index=classes, columns=classes)
+    res = res.fillna(0)
+    
+    for i in range(len(y_test)):
+        res.loc[y_test.iloc[i], y_pred[i]] += 1
+    
+    return res
+
+def recall_score_multiclass(cat, confusion_matrix):
+    '''
+    input:
+        cat: string, nombre de la categoria que puntuar
+        confusion_matrix: dataFrame, matriz de confusion binaria
+    output:
+        res: float, puntaje recall de la clase
+    '''
+    casos = confusion_matrix.loc[cat] #Tomo fila
+    casos = casos.sum()
+    
+    aciertos = confusion_matrix.loc[cat,cat]
+    
+    res = 1
+    
+    if casos > 0:
+        res = aciertos / casos
+
+    return res
+
+def precision_score_multiclass(cat, confusion_matrix):
+    '''
+    input:
+        cat: string, nombre de la categoria que puntuar
+        confusion_matrix: dataFrame, matriz de confusion binaria
+    output:
+        res: float, puntaje precision de la clase
+    '''
+    casos = confusion_matrix[cat] #Tomo columna
+    casos = casos.sum()
+    
+    aciertos = confusion_matrix.loc[cat,cat]
+    
+    res = 1
+
+    if casos > 0:
+        res = aciertos / casos
+    
+    return res
