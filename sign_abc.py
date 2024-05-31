@@ -42,19 +42,28 @@ img = fx.show_image_from_data(26, data)  # Es una Y
 # Quiero ver si en los datos originales van en filas o en columnas
 # (o sea, si los primeros 28 son la primer fila o la primer columna)
 
-plt.plot(img[4])
-plt.xlabel("Columna")
+plt.plot(img[4], "o-.", color="#D67236")
+plt.xlabel("Posición")
 plt.ylabel("Intensidad")
-plt.title("Intensidad de la Fila 4 de una Y (id: 26)")
+plt.title("Intensidad de la Fila 4 de la Fig. 2 (id: 26)")
+plt.grid(axis="y", linewidth=0.5)
+plt.gcf().set_size_inches(4, 6)
 
 # Se ve que tiene dos picos: o sea, img[4] representa una fila
 
 # %%######
-data.iloc[26][28 * 4 : 28 * 5].plot(
-    xlabel="Fila",
+data.iloc[26][28 * 4 : 28 * 5].reset_index(drop=True).plot(
+    xlabel="Posición",
     ylabel="Intensidad",
-    title="Intensidad de la Fila 4 de una Y (id: 26)",
+    title="Intensidad de los datos 112 a 139 (id: 26)",
+    color="#D67236",
+    linestyle="-.",
+    marker="o",
+    ylim=(-4, 255),
+    figsize=(4, 6),
 )
+plt.grid(axis="y", linewidth=0.5)
+
 # Pero si ploteo los 28 numeros que van de 28*4 a 28*5, se ve que la intensidad es 0 (es decir, es la columna 4)
 
 
@@ -89,7 +98,7 @@ print(f"Hay {len(medias[medias < 1])} pixeles con intensidad media menor a 1")
 plot_medias = fx.show_image(
     medias.values,
     title="Intensidad Media de cada Pixel\n(entre todas las letras)",
-    vmax=1,
+    vmax=255,
 )
 
 # Viendo el grafico, practicamente se podrian descartar las 2 primeras y ultimas filas y columnas
@@ -103,7 +112,7 @@ print(f"Hay {len(medianas[medianas < 1])} pixeles con mediana menor a 1")
 plot_medianas = fx.show_image(
     medianas.values,
     title="Mediana de la Intensidad de cada Pixel\n(entre todas las letras)",
-    vmax=1,
+    vmax=255,
 )
 
 # Todas las letras tienen más pixeles vacíos que ocupados, tiene sentido
@@ -159,12 +168,12 @@ for letra in ["L", "E", "M", "I"]:
 for i in range(len(medias_por_letra)):
     fx.show_image(
         medias_por_letra[i].values,
-        title="Media de la Intensidad de cada Pixel - " + ["L", "N", "M", "E"][i],
+        title="Media de la Intensidad de cada Pixel - " + ["L", "E", "M", "I"][i],
         vmax=255,
     )
     fx.show_image(
         medianas_por_letra[i].values,
-        title="Mediana de la Intensidad de cada Pixel - " + ["L", "N", "M", "E"][i],
+        title="Mediana de la Intensidad de cada Pixel - " + ["L", "E", "M", "I"][i],
         vmax=255,
     )
 
@@ -173,6 +182,13 @@ for i in range(len(medias_por_letra)):
 
 # Llama la atencion que el grafico de la e sea parecido al de la mediana general,
 # pero mas comprimido
+
+# %%###
+# # Veamos histogramas para algunos pixeles
+# Por ejemplo, el pixel 14,14
+data["col_20_row_5"].hist(bins=20)
+plt.axvline(data["col_20_row_5"].mean(), color="k", linestyle="dashed", linewidth=1)
+plt.axvline(data["col_20_row_5"].median(), color="r", linestyle="dashed", linewidth=1)
 
 # %%######
 # Para analizar la dispersion de alguna de las clases, veamos el desvio estandar
