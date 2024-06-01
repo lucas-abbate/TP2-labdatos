@@ -29,7 +29,7 @@ data = pd.read_csv("emnist_letters_tp.csv", header=None, index_col=0)
 
 # %%######
 data.head()
-print(data.index.value_counts().sort_index())  # Balanceado
+print(data.index.value_counts().sort_index())  # Balanceado, 2400 ocurrencias de cada una de las 26 letras
 # Index etiqueta, el resto intensidades de pixeles
 # 28x28 = 784 pixeles
 
@@ -70,7 +70,7 @@ plt.grid(axis="y", linewidth=0.5)
 # %%######
 # Renombro los nombres de las variables:
 data = data.rename(
-    columns={28 * i + j: f"col_{i+1}_row_{j}" for i in range(28) for j in range(1, 29)}
+    columns={28 * i + j + 1: f"col_{i+1}_row_{j+1}" for i in range(28) for j in range(28)}
 )
 
 # %%######
@@ -123,7 +123,7 @@ plot_medianas = fx.show_image(
 top_medianas = medianas.sort_values(ascending=False).head(10)
 top_medianas = top_medianas.rename(
     index={
-        k: k.replace("col_", "Col: ").replace("_row_", "\nFila: ")
+        k: k.replace("col_", "C ").replace("_row_", "\nF ")
         for k in top_medianas.index
     }
 )
