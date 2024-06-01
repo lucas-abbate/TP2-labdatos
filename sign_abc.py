@@ -233,6 +233,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(
     X, y, test_size=0.3
 )  # 70% para train y 30% para test
 
+
 # %%######
 # EJERCICIO 3
 letras = ["A", "E", "I", "O", "U"]
@@ -242,20 +243,23 @@ data_ej3 = data.loc[letras]
 X = data_ej3.reset_index(drop=True)
 y = data_ej3.index.to_series().reset_index(drop=True)
 
-# Divido en conjunto de entrenamiento y de test, con el tamaño de test del 20%
-X_dev, X_eval, y_dev, y_eval = train_test_split(X, y, random_state=1, test_size=0.2)
+# Divido en conjunto de entrenamiento y de test, con el tamaño de test del 30%
+X_dev, X_eval, y_dev, y_eval = train_test_split(X, y, random_state=1, test_size=0.3)
 
 alturas = [i for i in range(3, 15)]  # Modificar con alturas de interés
 nsplits = 5
 kf = KFold(n_splits=nsplits)
 
 # Creo la matriz para comparar accuracy donde cada fila es un fold y cada columna un modelo
-res_acc = np.zeros((nsplits, len(alturas)))
+res_acc_gini = np.zeros((nsplits, len(alturas)))
+res_acc_entrpy = np.zeros((nsplits, len(alturas)))
 
 # Creo una matriz para comparar precision y una para comparar recall donde cada fila
 # es un fold, cada columna un modelo y cada profundidad es una vocal
-res_prec = np.zeros((nsplits, len(alturas), 5))
-res_rcll = np.zeros((nsplits, len(alturas), 5))
+res_prec_gini = np.zeros((nsplits, len(alturas), 5))
+res_rcll_gini = np.zeros((nsplits, len(alturas), 5))
+res_prec_entrpy = np.zeros((nsplits, len(alturas), 5))
+res_rcll_entrpy = np.zeros((nsplits, len(alturas), 5))
 
 for i, (train_index, test_index) in enumerate(kf.split(X_dev)):
 
@@ -264,152 +268,75 @@ for i, (train_index, test_index) in enumerate(kf.split(X_dev)):
 
     for j, hmax in enumerate(alturas):
 
-        arbol = tree.DecisionTreeClassifier(max_depth=hmax)
+        arbol = tree.DecisionTreeClassifier(criterion='gini', max_depth=hmax)
         arbol.fit(kf_X_train, kf_y_train)
         pred = arbol.predict(kf_X_test)
 
-        res_acc[i, j] = metrics.accuracy_score(kf_y_test, pred)
+        res_acc_gini[i, j] = metrics.accuracy_score(kf_y_test, pred)
 
         matrx_conf_train = fx.matriz_conf_bin_multiclass(letras, kf_y_test, pred)
         for k in range(5):
-            res_prec[i, j, k] = fx.precision_score_multiclass(
+            res_prec_gini[i, j, k] = fx.precision_score_multiclass(
                 letras[k], matrx_conf_train
             )
-            res_rcll[i, j, k] = fx.recall_score_multiclass(letras[k], matrx_conf_train)
+            res_rcll_gini[i, j, k] = fx.recall_score_multiclass(letras[k], matrx_conf_train)
+            
+        arbol = tree.DecisionTreeClassifier(criterion='entropy', max_depth=hmax)
+        arbol.fit(kf_X_train, kf_y_train)
+        pred = arbol.predict(kf_X_test)
+
+        res_acc_entrpy[i, j] = metrics.accuracy_score(kf_y_test, pred)
+
+        matrx_conf = fx.matriz_conf_bin_multiclass(letras, kf_y_test, pred)
+        for k in range(5):
+            res_prec_entrpy[i, j, k] = fx.precision_score_multiclass(
+                letras[k], matrx_conf_train
+            )
+            res_rcll_entrpy[i, j, k] = fx.recall_score_multiclass(letras[k], matrx_conf)
 
 
-calidad_acc = res_acc.mean(axis=0)
-calidad_prec = res_prec.mean(axis=0)  # cada letra es una columna, cada fila un modelo
-calidad_rcll = res_rcll.mean(axis=0)  # cada letra es una columna, cada fila un modelo
+acc_gini = res_acc_gini.mean(axis=0)
+prec_gini = res_prec_gini.mean(axis=0)  # cada letra es una columna, cada fila un modelo
+rcll_gini = res_rcll_gini.mean(axis=0)  # cada letra es una columna, cada fila un modelo
 
+acc_entrpy = res_acc_entrpy.mean(axis=0)
+prec_entrpy = res_prec_entrpy.mean(axis=0)  # cada letra es una columna, cada fila un modelo
+rcll_entrpy = res_rcll_entrpy.mean(axis=0)  # cada letra es una columna, cada fila un modelo
 
-# %%
-# Comparo arboles en caso de train
-resultados_train = pd.DataFrame()
+#%% ######
+# Comparo arboles bajo criterio Gini
 
-resultados_train["altura"] = alturas
-resultados_train["accuracy"] = calidad_acc
+# Cada fila es el mejor arbol de cada criterio, cada columna los factores de comparacion
+# Comparo con la accuracy, el promedio de precision de todas las letras y el promedio de recall
+best_trees = np.zeros((2,4))
+
+print("Analizamos el criterio Gini")
+
+metricas_gini = pd.DataFrame()
+
+metricas_gini["altura"] = alturas
+metricas_gini["accuracy"] = acc_gini
+metricas_gini["criterio"] = "Gini"
 
 for j, hmax in enumerate(alturas):
 
     for i in range(len(letras)):
         prec_column = "prec_" + letras[i]
         rcll_column = "rcll_" + letras[i]
-        resultados_train.loc[j, prec_column] = calidad_prec[j, i]
-        resultados_train.loc[j, rcll_column] = calidad_rcll[j, i]
+        metricas_gini.loc[j, prec_column] = prec_gini[j, i]
+        metricas_gini.loc[j, rcll_column] = rcll_gini[j, i]
 
-prom_acc_train = calidad_acc
-prom_prec_train = calidad_prec.mean(axis=1)
-prom_rcll_train = calidad_rcll.mean(axis=1)
+prom_acc_g = acc_gini # Lo llamo promedio para mantener estructura en el codigo
+prom_prec_g = prec_gini.mean(axis=1)
+prom_rcll_g = rcll_gini.mean(axis=1)
 
-resultados_train = resultados_train.reindex(sorted(resultados_train.columns), axis=1)
+metricas_gini = metricas_gini.reindex(sorted(metricas_gini.columns), axis=1)
+metricas_gini.insert(2,'accuracy', metricas_gini.pop('accuracy'))
 
-# Me quedo con que sean el top 3 bajo cualquier criterio
-mejores_arboles = []
-
-print("Sobre el caso de train:\n")
+puntaje = np.zeros((3, len(alturas)))  # 1 fila por métrica, 1 columna por altura a analizar
 
 print("Basandonos en su accuracy, los mejores arboles son:")
-order = np.argsort(-prom_acc_train)
-
-for i in range(3):
-    if alturas[order[i]] not in mejores_arboles:
-        mejores_arboles.append(alturas[order[i]])
-
-res = ""
-for i, hmax in enumerate(alturas):
-    res += str(alturas[order[i]]) + ", "
-res = res[:-2]
-print(res + "\n")
-
-
-print("Basandonos en su precision promedio, los mejores arboles son:")
-order = np.argsort(-prom_prec_train)
-
-for i in range(3):
-    if alturas[order[i]] not in mejores_arboles:
-        mejores_arboles.append(alturas[order[i]])
-
-res = ""
-for i, hmax in enumerate(alturas):
-    res += str(alturas[order[i]]) + ", "
-res = res[:-2]
-print(res + "\n")
-
-
-print("Basandonos en su recall promedio, los mejores arboles son:")
-order = np.argsort(-prom_rcll_train)
-
-for i in range(3):
-    if alturas[order[i]] not in mejores_arboles:
-        mejores_arboles.append(alturas[order[i]])
-
-res = ""
-for i, hmax in enumerate(alturas):
-    res += str(alturas[order[i]]) + ", "
-res = res[:-2]
-print(res + "\n")
-
-# %% Comparo arboles en caso de test
-# Elijo las alturas a analizar segun ejercicio anterior
-mejores_arboles.sort()
-
-alturas = mejores_arboles
-
-calidad_acc = np.zeros(len(alturas))
-calidad_prec = np.zeros(
-    (len(alturas), len(letras))
-)  # Fila por modelo, columna por letra
-calidad_rcll = np.zeros(
-    (len(alturas), len(letras))
-)  # Fila por modelo, columna por letra
-
-for i, hmax in enumerate(alturas):
-
-    arbol = tree.DecisionTreeClassifier(max_depth=hmax)
-    arbol.fit(X_dev, y_dev)
-    pred = arbol.predict(X_eval)
-
-    calidad_acc[i] = metrics.accuracy_score(y_eval, pred)
-
-    matrx_conf_test = fx.matriz_conf_bin_multiclass(letras, y_eval, pred)
-    for k in range(5):
-        calidad_prec[i, k] = fx.precision_score_multiclass(letras[k], matrx_conf_test)
-        calidad_rcll[i, k] = fx.recall_score_multiclass(letras[k], matrx_conf_test)
-
-
-resultados_test = pd.DataFrame()
-
-resultados_test["altura"] = alturas
-resultados_test["accuracy"] = calidad_acc
-
-for j, hmax in enumerate(alturas):
-    for i in range(len(letras)):
-        prec_column = "prec_" + letras[i]
-        rcll_column = "rcll_" + letras[i]
-        resultados_test.loc[j, prec_column] = calidad_prec[j, i]
-        resultados_test.loc[j, rcll_column] = calidad_rcll[j, i]
-
-prom_acc_test = calidad_acc
-prom_prec_test = calidad_prec.mean(axis=1)
-prom_rcll_test = calidad_rcll.mean(axis=1)
-
-resultados_test = resultados_test.reindex(sorted(resultados_test.columns), axis=1)
-
-# Notamos que la I es la letra con mayor precision, la U suele ser la de menor
-# Notamos que la I y O son las de mayor recall, la de menor recall varía
-
-
-# %% Analisis sobre caso de evaluacion
-
-print("Sobre el caso de test:\n")
-
-puntaje = np.zeros(
-    (3, len(alturas))
-)  # 1 fila por métrica, 1 columna por altura a analizar
-
-print("Basandonos en su accuracy, los mejores arboles son:")
-order = np.argsort(-prom_acc_test)
+order = np.argsort(-prom_acc_g)
 res = ""
 for i, hmax in enumerate(alturas):
     res += str(alturas[order[i]]) + ", "
@@ -419,7 +346,7 @@ print(res + "\n")
 
 
 print("Basandonos en su precision promedio, los mejores arboles son:")
-order = np.argsort(-prom_prec_test)
+order = np.argsort(-prom_prec_g)
 res = ""
 for i, hmax in enumerate(alturas):
     res += str(alturas[order[i]]) + ", "
@@ -429,7 +356,77 @@ print(res + "\n")
 
 
 print("Basandonos en su recall promedio, los mejores arboles son:")
-order = np.argsort(-prom_rcll_test)
+order = np.argsort(-prom_rcll_g)
+res = ""
+for i, hmax in enumerate(alturas):
+    res += str(alturas[order[i]]) + ", "
+    puntaje[2, i] += order.argsort()[i]
+res = res[:-2]
+print(res + "\n")
+
+
+# Decido el mejor como el que en promedio de la posicion en el top tiene mejor calidad
+puntaje = puntaje.mean(axis=0)
+mejor_pos = np.argsort(puntaje)[0]
+
+# Propiedades del mejor Gini
+best_trees[:,0] = alturas[mejor_pos]
+best_trees[0,1:] = [prom_acc_g[mejor_pos],
+                   prom_prec_g[mejor_pos],
+                   prom_rcll_g[mejor_pos]]
+
+print(f"La mejor altura con criterio Gini basándonos en las 3 métricas es la altura {alturas[mejor_pos]}")
+
+#%% ####
+# Comparo los arboles de criterio Entropy
+
+print("\nAnalizamos el criterio Entropy")
+
+metricas_entrpy = pd.DataFrame()
+
+metricas_entrpy["altura"] = alturas
+metricas_entrpy["accuracy"] = acc_entrpy
+metricas_entrpy["criterio"] = "Entropy"
+
+for j, hmax in enumerate(alturas):
+
+    for i in range(len(letras)):
+        prec_column = "prec_" + letras[i]
+        rcll_column = "rcll_" + letras[i]
+        metricas_entrpy.loc[j, prec_column] = prec_entrpy[j, i]
+        metricas_entrpy.loc[j, rcll_column] = rcll_entrpy[j, i]
+
+prom_acc_e = acc_entrpy # Lo llamo promedio para mantener estructura en el codigo
+prom_prec_e = prec_entrpy.mean(axis=1)
+prom_rcll_e = rcll_entrpy.mean(axis=1)
+
+metricas_entrpy = metricas_entrpy.reindex(sorted(metricas_entrpy.columns), axis=1)
+metricas_entrpy.insert(2,'accuracy', metricas_entrpy.pop('accuracy'))
+
+puntaje = np.zeros((3, len(alturas)))  # 1 fila por métrica, 1 columna por altura a analizar
+
+print("Basandonos en su accuracy, los mejores arboles son:")
+order = np.argsort(-prom_acc_e)
+res = ""
+for i, hmax in enumerate(alturas):
+    res += str(alturas[order[i]]) + ", "
+    puntaje[0, i] += order.argsort()[i]
+res = res[:-2]
+print(res + "\n")
+
+
+print("Basandonos en su precision promedio, los mejores arboles son:")
+order = np.argsort(-prom_prec_e)
+res = ""
+for i, hmax in enumerate(alturas):
+    res += str(alturas[order[i]]) + ", "
+    puntaje[1, i] += order.argsort()[i]
+res = res[:-2]
+print(res + "\n")
+
+
+print("Basandonos en su recall promedio, los mejores arboles son:")
+order = np.argsort(-prom_rcll_e)
 res = ""
 for i, hmax in enumerate(alturas):
     res += str(alturas[order[i]]) + ", "
@@ -440,8 +437,75 @@ print(res + "\n")
 
 # Decido el mejor como el que en promedio de la posicion en el top predice mejor
 puntaje = puntaje.mean(axis=0)
-best_tree = alturas[(np.argsort(puntaje)[0])]
+mejor_pos = np.argsort(puntaje)[0]
 
-print(f"La mejor altura basándonos en las 3 métricas es la altura {best_tree}")
+# Propiedades del mejor Entropy
+best_trees[:,0] = alturas[mejor_pos]
+best_trees[1,1:] = [prom_acc_e[mejor_pos],
+                   prom_prec_e[mejor_pos],
+                   prom_rcll_e[mejor_pos]]
 
-# %%
+print(f"La mejor altura con criterio Entropy basándonos en las 3 métricas es la altura {alturas[mejor_pos]}")
+
+metricas_train = pd.concat([metricas_gini, metricas_entrpy])
+
+#%% #####
+# Comparo los mejores arboles de cada criterio
+
+puntaje = np.zeros(2)
+
+for i in range(1,4):
+    puntaje[(np.argsort(-best_trees[:,i])[0])] += 1
+mejor_pos = np.argsort(-puntaje)[0]
+    
+criterios = ["gini", "entropy"]
+
+best_hyperparam = {}
+best_hyperparam['criterio'] = criterios[mejor_pos]
+best_hyperparam['altura'] = int(best_trees[mejor_pos,0])
+
+print('Los mejores hiperparametros fueron:')
+print('Criterio:', best_hyperparam['criterio'])
+print('Altura:', best_hyperparam['altura'])
+
+#%% ####
+# Ajusto el arbol bajo los mejores hiperparámetros
+
+arbol = tree.DecisionTreeClassifier(criterion = best_hyperparam['criterio'],
+                                    max_depth= best_hyperparam['altura'])
+
+arbol.fit(X_dev, y_dev)
+pred = arbol.predict(X_eval)
+
+#%% ####
+# Analizo su performance bajo todas las medidas
+print('Analisis de performance del arbol elegido:\n')
+
+performance = pd.Series(dtype=object)
+
+performance['Accuracy'] = metrics.accuracy_score(y_eval, pred)
+performance['Promedio de precision'] = 0
+performance['Promedio de recall'] = 0
+
+print('Accuracy: ' + str(performance['Accuracy']) + '\n')
+
+matrx_conf_test = fx.matriz_conf_bin_multiclass(letras, y_eval, pred)
+for k in range(5):
+    prec_column = "Precision letra " + letras[k]
+    performance[prec_column] = fx.precision_score_multiclass(letras[k], matrx_conf_test)
+    performance['Promedio de precision'] += performance[prec_column]
+    
+    rcll_column = "Recall letra " + letras[k]
+    performance[rcll_column] = fx.recall_score_multiclass(letras[k], matrx_conf_test)
+    performance['Promedio de recall'] += performance[rcll_column]
+    
+    print('Letra ' + letras[k] + ":")
+    print('Precision =', performance[prec_column])
+    print('Recall    =', performance[rcll_column], '\n')
+
+performance['Promedio de precision'] /= 5
+performance['Promedio de recall'] /= 5
+
+print('Promedio de precision:', performance['Promedio de precision'])
+print('Promedio de recall:', performance['Promedio de recall'], '\n')
+
