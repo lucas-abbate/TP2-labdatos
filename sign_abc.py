@@ -218,6 +218,11 @@ a_plot = fx.show_image(
 
 # idem con la a
 
+#%%
+# Eliminamos variables no necesarias
+del A, a_plot, A_std, C, c_plot, C_std, i, img, letra, letra_data, maximos, media_letra, mediana_letra, medianas
+del medianas_por_letra, medias, medias_por_letra, plot_maximos, plot_medianas, plot_medias, T, t_plot, T_std, top_medianas
+
 # %%######################
 ### Clasificacion de L y A
 # Conservo solo L y A
@@ -226,13 +231,313 @@ data_LA = data.loc[["L", "A"]]
 
 
 # %%######
+### Separo en conjunto de train y de test
+
 X = data_LA.reset_index(drop=True)
-y = data_LA.index
+y = data_LA.index.to_series()
+
+y = (y == 'L') #Si es L vale 1, si es A vale 0
 
 X_train, X_test, Y_train, Y_test = train_test_split(
     X, y, test_size=0.3
 )  # 70% para train y 30% para test
 
+#%%
+### Observamos la media de los datos
+### Observo la distribución de las medias de los pixeles de cada letra
+fx.show_image(data_LA.mean().values,
+              title="Media de la Intensidad de cada pixel - Letras L y A",
+              vmax=255)
+
+#%%
+### Observamos las medias de cada letra por separado
+
+fx.show_image(data_LA.loc['L'].mean().values,
+              title="Media de la Intensidad de cada pixel - Letra L",
+              vmax=255)
+
+fx.show_image(data_LA.loc['A'].mean().values,
+              title="Media de la Intensidad de cada pixel - Letra A",
+              vmax=255)
+
+### Notamos que las medias son bastante distintas
+
+#%%
+### Observamos los pixeles de diferencia entre cada letra
+difference = data_LA.loc['L'].mean().values - data_LA.loc['A'].mean().values
+difference[difference<0] = 0
+
+fx.show_image(difference,
+              title="Pixeles con media en L muy superior a media en A",
+              vmax=255)
+
+difference = data_LA.loc['L'].mean().values - data_LA.loc['A'].mean().values
+difference = -difference
+difference[difference<0] = 0
+
+fx.show_image(difference,
+              title="Pixeles con media en A muy superior a media en L",
+              vmax=255)
+
+### Los pixeles de mayor intensidad son aquellos donde las diferencias son mayores
+
+#%%
+# Preparamos el dataFrame con los resultados
+eval_ej2 = pd.DataFrame(columns=['Atributos','N_neighbors','Accuracy','Matriz confusión', 'Precisión', 'Recall', 'F1'])
+
+#%%
+# Elegimos 3 atributos para ajustar un modelo de KNN basándonos en distintos atributos
+# Probamos con pixeles donde las medias no son distintivas para ninguna letra
+atr = ['col_1_row_1','col_1_row_28','col_28_row_28']
+caso = "Pixeles no distintivos"
+
+eleccion = data_LA.mean()
+
+for pixel in atr:
+    eleccion[pixel] = 255
+
+fx.show_image(eleccion.values,
+              title="Eleccion (amarillo) sobre media general",
+              vmax=255)
+
+
+#%%
+# Ajusto el modelo de KNN
+vecinos = 5
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+print("Matriz confusión binaria:")
+
+tp, tn, fp, fn = fx.matriz_confusion_binaria(Y_test, Y_pred)
+matrx = np.array([[tp,fn],[fp,tn]])
+print(matrx)
+
+acc = fx.accuracy_score(tp, tn, fp, fn)
+print("Exactitud del modelo:", acc)
+
+# Como predice todo como lo mismo no calculamos precision, recall y f1
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, 'N/A', 'N/A', 'N/A']
+
+#%%
+# Probamos aumentando el numero de vecinos
+vecinos = 15
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+print("Matriz confusión binaria:")
+
+tp, tn, fp, fn = fx.matriz_confusion_binaria(Y_test, Y_pred)
+matrx = np.array([[tp,fn],[fp,tn]])
+print(matrx)
+
+acc = fx.accuracy_score(tp, tn, fp, fn)
+print("Exactitud del modelo:", acc)
+#matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, 'N/A', 'N/A', 'N/A']
+
+# No hubo cambio en las predicciones
+
+#%% #########
+# Elegimos pixeles cuya media en A sea muy superior
+atr = ['col_10_row_15','col_20_row_16','col_20_row_8']
+caso = "Media en A muy superior"
+
+eleccion = data_LA.loc['A'].mean() - data_LA.loc['L'].mean()
+
+for pixel in atr:
+    eleccion[pixel] = 255
+
+eleccion[eleccion<0] = 0
+
+fx.show_image(eleccion.values,
+              title="Elección (amarillo) sobre mayor intensidad en A",
+              vmax=255)
+
+#%%
+# Ajusto el modelo de KNN
+vecinos = 5
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Cambiamos el numero de vecinos
+vecinos = 15
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Probamos con pixeles cuya media en L sea muy superior
+atr = ['col_13_row_23','col_12_row_22','col_13_row_21']
+caso = "Media en L muy superior"
+
+eleccion = data_LA.loc['L'].mean() - data_LA.loc['A'].mean()
+
+for pixel in atr:
+    eleccion[pixel] = 255
+
+eleccion[eleccion<0] = 0
+
+fx.show_image(eleccion.values,
+              title="Elección (amarillo) sobre mayor intensidad en L",
+              vmax=255)
+
+#%%
+# Ajusto el modelo de KNN
+vecinos = 5
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Cambiamos el numero de vecinos
+vecinos = 15
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Probamos con pixeles donde no hay una gran diferencia de intensidad
+# Estos serán donde la media general sea mayor
+atr = ['col_15_row_15','col_8_row_20','col_16_row_8']
+caso = "No hay gran diferencia en medias"
+
+eleccion = data_LA.mean()
+
+for pixel in atr:
+    eleccion[pixel] = 255
+
+eleccion[eleccion<0] = 0
+
+fx.show_image(eleccion.values,
+              title="Elección (amarillo) sobre media general",
+              vmax=255)
+
+#%%
+# Ajusto el modelo de KNN
+vecinos = 5
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Cambiamos el numero de vecinos
+vecinos = 15
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Aumentemos el numero de atributos a 6
+# Probamos con los pixeles no significativos ya elegidos y los representativos de la letra A
+atr = ['col_10_row_15','col_20_row_16','col_20_row_8',
+       'col_1_row_1','col_1_row_28','col_28_row_28']
+caso = "Media muy superior en A + No significativos"
+
+eleccion = data_LA.loc['A'].mean() - data_LA.loc['L'].mean()
+
+for pixel in atr:
+    eleccion[pixel] = 255
+
+eleccion[eleccion<0] = 0
+
+fx.show_image(eleccion.values,
+              title="Elección (amarillo) sobre mayor intensidad en A",
+              vmax=255)
+
+#%%
+# Ajusto el modelo de KNN
+vecinos = 5
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Cambiamos el numero de vecinos
+vecinos = 15
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Probamos con los pixeles elegidos para representar una media de A superior y una de L superior
+atr = ['col_10_row_15','col_20_row_16','col_20_row_8',
+       'col_13_row_23','col_12_row_22','col_13_row_21']
+caso = "Media en A muy superior + Media en L muy superior"
+
+eleccion = data_LA.mean()
+
+for pixel in atr:
+    eleccion[pixel] = 255
+
+eleccion[eleccion<0] = 0
+
+fx.show_image(eleccion.values,
+              title="Elección (amarillo) sobre media general",
+              vmax=255)
+
+#%%
+# Ajusto el modelo de KNN
+vecinos = 5
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Cambiamos el numero de vecinos
+vecinos = 15
+model = KNeighborsClassifier(n_neighbors = vecinos)
+model.fit(X_train[atr], Y_train) # entreno el modelo con los datos X e Y
+Y_pred = model.predict(X_test[atr]) # me fijo qué clases les asigna el modelo a mis datos
+
+matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+
+eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
+
+#%%
+# Elimino variables no relevantes para los resultados
+del matrx, acc, prec, rcll, f1, atr, vecinos, model, difference, eleccion, tp, tn, fp, fn, pixel, caso
+del Y_test, Y_pred, Y_train, X_test, X_train, X, y
 
 # %%######
 # EJERCICIO 3

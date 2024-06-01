@@ -68,6 +68,64 @@ def flip_rotate(image: np.array) -> np.array:
     image = np.rot90(image)
     return image
 
+def matriz_confusion_binaria(y_test, y_pred):
+    tp = 0
+    fp = 0
+    tn = 0
+    fn = 0
+    for i in range(len(y_test)):
+        if y_test[i]:
+            if y_pred[i]:
+                tp += 1
+            else:
+                fn += 1
+        else:
+            if y_pred[i]:
+                fp += 1
+            else:
+                tn += 1
+    
+    return tp, tn, fp, fn
+
+def accuracy_score(tp, tn, fp, fn):
+    acc = (tp+tn)/(tp+tn+fp+fn)
+    return acc
+
+def precision_score(tp, tn, fp, fn):
+    prec = tp/(tp+fp)
+    return prec
+
+def recall_score(tp, tn, fp, fn):
+    rec = tp/(tp+fn)
+    return rec
+
+def f1_score(tp, tn, fp, fn):
+    prec = precision_score(tp, tn, fp, fn)
+    rec = recall_score(tp, tn, fp, fn)
+    f1 = 2*prec*rec/(prec+rec)
+    return f1
+
+def calidad_modelo(y_test, y_pred):
+    tp, tn, fp, fn = matriz_confusion_binaria(y_test, y_pred)
+    
+    acc = accuracy_score(tp, tn, fp, fn)
+    print('Accuracy:', acc)
+    
+    prec = precision_score(tp, tn, fp, fn)
+    print('Precision:', prec)
+    
+    rcll = recall_score(tp, tn, fp, fn)
+    print('Recall', rcll)
+    
+    f1 = f1_score(tp, tn, fp, fn)
+    print('F1:', f1)
+    
+    matrx_conf = np.array([[tp,fn],[fp,tn]])
+    print('Matriz de confusión binaria:')
+    print(matrx_conf)
+    
+    return matrx_conf, acc, prec, rcll, f1
+
 def matriz_conf_bin_multiclass(classes, y_test, y_pred):
     '''
     input:
