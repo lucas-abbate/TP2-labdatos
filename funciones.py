@@ -88,21 +88,21 @@ def matriz_confusion_binaria(y_test, y_pred):
     return tp, tn, fp, fn
 
 def accuracy_score(tp, tn, fp, fn):
-    acc = (tp+tn)/(tp+tn+fp+fn)
+    acc = (tp+tn)/(tp+tn+fp+fn) if (tp+tn)>0 else 0
     return acc
 
 def precision_score(tp, tn, fp, fn):
-    prec = tp/(tp+fp)
+    prec = tp/(tp+fp) if tp>0 else 0
     return prec
 
 def recall_score(tp, tn, fp, fn):
-    rec = tp/(tp+fn)
+    rec = tp/(tp+fn) if tp>0 else 0
     return rec
 
 def f1_score(tp, tn, fp, fn):
     prec = precision_score(tp, tn, fp, fn)
     rec = recall_score(tp, tn, fp, fn)
-    f1 = 2*prec*rec/(prec+rec)
+    f1 = 2*prec*rec/(prec+rec) if prec*rec>0 else 0
     return f1
 
 def calidad_modelo(y_test, y_pred):
