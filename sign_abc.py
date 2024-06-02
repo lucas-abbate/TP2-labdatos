@@ -14,9 +14,7 @@ import funciones as fx
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split, KFold
 from sklearn import metrics, tree
-import seaborn as sns
 from sklearn.model_selection import KFold
-import random
 
 # %%##########################################################################
 #######       Seccion 1:   análisis exploratorio de datos
@@ -309,11 +307,6 @@ I_plot = fx.show_image(
 
 # idem con la a
 
-#%%
-# Eliminamos variables no necesarias
-del A, a_plot, A_std, C, c_plot, C_std, i, img, letra, letra_data, maximos, media_letra, mediana_letra, medianas
-del medianas_por_letra, medias, medias_por_letra, plot_maximos, plot_medianas, plot_medias, T, t_plot, T_std, top_medianas
-
 # %%##########################################################################
 #######       Seccion 2: Clasificacion binaria de L y A con modelos KNN
 
@@ -329,11 +322,10 @@ y = data_LA.index.to_series()
 
 y = (y == 'L') #Si es L vale 1, si es A vale 0
 
-random.seed(123) # Fijamos la semilla para reproducibilidad
-
 X_train, X_test, Y_train, Y_test = train_test_split(
-    X, y, test_size=0.3
-)  # 70% para train y 30% para test
+    X, y, test_size=0.3,
+    random_state=1
+)  # 70% para train y 30% para test, fijamos la semilla para reproducibilidad
 
 #%%
 ### Observamos la media de los datos
@@ -485,18 +477,13 @@ for atr, caso in zip(atr_x_caso, casos):
 last_attr = ""
 for _ , row in eval_ej2.iterrows():
     if last_attr != row['Atributos']:
+        print()
         last_attr = row['Atributos']
         print(last_attr)
     print("Vecinos (N):", row['N_neighbors'], "\tAccuracy:", row['Accuracy'])
 
 # En nuestra ejecucion la mejor exactitud (0.9736) la logramos usando
 # los 10 pixeles con mayor diferencia entre medias y 5 vecinos
-
-#%%
-# Elimino variables no relevantes para los resultados
-del matrx, acc, prec, rcll, f1, atr, vecinos, model, difference, eleccion, tp, tn, fp, fn, pixel, caso
-del Y_test, Y_pred, Y_train, X_test, X_train, X, y
-
 
 # %%##########################################################################
 #######       Seccion 3: Clasificación multiclase de vocales con árboles de de decisión
@@ -509,7 +496,7 @@ X = data_ej3.reset_index(drop=True)
 y = data_ej3.index.to_series().reset_index(drop=True)
 
 # Divido en conjunto de entrenamiento y de test, con el tamaño de test del 30%
-X_dev, X_eval, y_dev, y_eval = train_test_split(X, y, random_state=1, test_size=0.3)
+X_dev, X_eval, y_dev, y_eval = train_test_split(X, y, random_state=1, test_size=0.3) # Fijamos semilla
 
 alturas = [i for i in range(3, 15)]  # Modificar con alturas de interés
 nsplits = 5
@@ -533,7 +520,7 @@ for i, (train_index, test_index) in enumerate(kf.split(X_dev)):
 
     for j, hmax in enumerate(alturas):
 
-        arbol = tree.DecisionTreeClassifier(criterion='gini', max_depth=hmax)
+        arbol = tree.DecisionTreeClassifier(criterion='gini', max_depth=hmax, random_state=1) # Fijamos semilla
         arbol.fit(kf_X_train, kf_y_train)
         pred = arbol.predict(kf_X_test)
 
@@ -546,7 +533,7 @@ for i, (train_index, test_index) in enumerate(kf.split(X_dev)):
             )
             res_rcll_gini[i, j, k] = fx.recall_score_multiclass(letras[k], matrx_conf_train)
             
-        arbol = tree.DecisionTreeClassifier(criterion='entropy', max_depth=hmax)
+        arbol = tree.DecisionTreeClassifier(criterion='entropy', max_depth=hmax, random_state=1) # Fijamos semilla
         arbol.fit(kf_X_train, kf_y_train)
         pred = arbol.predict(kf_X_test)
 
