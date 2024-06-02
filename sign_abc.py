@@ -2,9 +2,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed May 22 10:39:20 2024
+Created on Fri May 24 2024
 
-@author: docentes Labo Datos
+@author: Equipo 2 (ABC)
+
 """
 # script para plotear letras
 
@@ -19,8 +20,10 @@ from sklearn import metrics, tree
 import seaborn as sns
 from sklearn.model_selection import KFold
 
-# %%######
-### Explore Data
+# %%##########################################################################
+#######       Seccion 1:   análisis exploratorio de datos
+
+# Carga
 data = pd.read_csv("emnist_letters_tp.csv", header=None, index_col=0)
 
 # %%
@@ -29,8 +32,9 @@ data = pd.read_csv("emnist_letters_tp.csv", header=None, index_col=0)
 
 # %%######
 data.head()
-print(data.index.value_counts().sort_index())  # Balanceado, 2400 ocurrencias de cada una de las 26 letras
-# Index etiqueta, el resto intensidades de pixeles
+print(data.index.value_counts().sort_index())
+# Observamos que esta balanceado, 2400 ocurrencias de cada una de las 26 letras (alfabeto ingles)
+# Index = etiqueta, el resto intensidades de pixeles
 # 28x28 = 784 pixeles
 
 # %%######
@@ -51,7 +55,6 @@ plt.gcf().set_size_inches(4, 6)
 
 # Se ve que tiene dos picos: o sea, img[4] representa una fila
 
-# %%######
 data.iloc[26][28 * 4 : 28 * 5].reset_index(drop=True).plot(
     xlabel="Posición",
     ylabel="Intensidad",
@@ -68,7 +71,7 @@ plt.grid(axis="y", linewidth=0.5)
 
 
 # %%######
-# Renombro los nombres de las variables:
+# Renombro las variables por filas y columnas:
 data = data.rename(
     columns={28 * i + j + 1: f"col_{i+1}_row_{j+1}" for i in range(28) for j in range(28)}
 )
@@ -143,9 +146,10 @@ top_medianas.plot(
 ## Comparaciones entre letras
 # Comparemos medianas entre L, E, M y I
 
+letras_comp = ["L", "E", "M", "I"]
 medias_por_letra = []
 medianas_por_letra = []
-for letra in ["L", "E", "M", "I"]:
+for letra in letras_comp:
     letra_data = data.loc[letra]
     media_letra = letra_data.mean()
     mediana_letra = letra_data.median()
@@ -168,12 +172,12 @@ for letra in ["L", "E", "M", "I"]:
 for i in range(len(medias_por_letra)):
     fx.show_image(
         medias_por_letra[i].values,
-        title="Media de la Intensidad de cada Pixel - " + ["L", "E", "M", "I"][i],
+        title="Media de la Intensidad de cada Pixel - " + letras_comp[i],
         vmax=255,
     )
     fx.show_image(
         medianas_por_letra[i].values,
-        title="Mediana de la Intensidad de cada Pixel - " + ["L", "E", "M", "I"][i],
+        title="Mediana de la Intensidad de cada Pixel - " + letras_comp[i],
         vmax=255,
     )
 
@@ -184,8 +188,29 @@ for i in range(len(medias_por_letra)):
 # pero mas comprimido
 
 # %%###
+# Para estimar la dificultad de diferenciar 2 letras calculamos la diferencia de sus "firmas" en media y mediana
+dif_media_EL = np.abs(medias_por_letra[1] - medias_por_letra[0])
+fx.show_image(dif_media_EL.values, title="Distancia de la Media entre 'E' y 'L'", vmax=255)
+
+dif_media_EM = np.abs(medias_por_letra[1] - medias_por_letra[2])
+fx.show_image(dif_media_EM.values, title="Distancia de la Media entre 'E' y 'M'", vmax=255)
+
+dif_mediana_EL = np.abs(medianas_por_letra[1] - medianas_por_letra[0])
+fx.show_image(dif_mediana_EL.values, title="Distancia de la Mediana entre 'E' y 'L'", vmax=255)
+
+dif_mediana_EM = np.abs(medianas_por_letra[1] - medianas_por_letra[2])
+fx.show_image(dif_mediana_EM.values, title="Distancia de la Mediana entre 'E' y 'M'", vmax=255)
+
+# %%###
+print(f"Media de la distancia entre medias de 'E' y 'L' = {dif_media_EL.mean()}")
+print(f"Media de la distancia entre medias de 'E' y 'M' = {dif_media_EM.mean()}")
+print(f"Media de la distancia entre medianas de 'E' y 'L' = {dif_mediana_EL.mean()}")
+print(f"Media de la distancia entre medianas de 'E' y 'M' = {dif_mediana_EM.mean()}")
+
+# Con ambos criterios (media y mediana) pacece a priori mas facil distingui 'E' de 'M' que 'E' de 'L'
+# %%###
 # # Veamos histogramas para algunos pixeles
-# Por ejemplo, el pixel 14,14
+# Por ejemplo, el pixel 14,14 (uno de los que tienen mayor intensidad mediana)
 data["col_20_row_5"].hist(bins=20)
 plt.axvline(data["col_20_row_5"].mean(), color="k", linestyle="dashed", linewidth=1)
 plt.axvline(data["col_20_row_5"].median(), color="r", linestyle="dashed", linewidth=1)
@@ -223,12 +248,12 @@ a_plot = fx.show_image(
 del A, a_plot, A_std, C, c_plot, C_std, i, img, letra, letra_data, maximos, media_letra, mediana_letra, medianas
 del medianas_por_letra, medias, medias_por_letra, plot_maximos, plot_medianas, plot_medias, T, t_plot, T_std, top_medianas
 
-# %%######################
-### Clasificacion de L y A
+# %%##########################################################################
+#######       Seccion 2: Clasificacion binaria de L y A con modelos KNN
+
 # Conservo solo L y A
 data_LA = data.loc[["L", "A"]]
 # Ya se que esta balanceado por letra, asi que lo va a estar para 2 letras
-
 
 # %%######
 ### Separo en conjunto de train y de test
