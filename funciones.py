@@ -4,7 +4,9 @@ import numpy as np
 from random import randint
 
 
-def show_image(px_array: np.array, title: str = "", vmin=None, vmax=None):
+def show_image(
+    px_array: np.array, title: str = "", vmin=None, vmax=None, return_array=False
+):
     """Funcion que recibe un array de numpy de 784 elementos
     y lo plotea como una imagen de 28x28 (donde los primeros 28 representan
     la primer columna).
@@ -32,10 +34,13 @@ def show_image(px_array: np.array, title: str = "", vmin=None, vmax=None):
     # ax.set_xticks()
     plt.grid(color="white", which="both", linewidth=0.3)
     plt.show()
-    return px_array
+    if return_array:
+        return px_array
 
 
-def show_image_from_data(n_row: int, data: pd.DataFrame, vmin=None, vmax=None):
+def show_image_from_data(
+    n_row: int, data: pd.DataFrame, vmin=None, vmax=None, return_array=False
+):
     """
     Función que recibe un número de fila y un dataframe de pandas
     con los datos de las letras. Plotea la imagen correspondiente
@@ -51,9 +56,10 @@ def show_image_from_data(n_row: int, data: pd.DataFrame, vmin=None, vmax=None):
         title="letra: " + letra + ", row: " + str(n_row),
         vmin=vmin,
         vmax=vmax,
+        return_array=return_array,
     )
-
-    return array
+    if return_array:
+        return array
 
 
 def flip_rotate(image: np.array) -> np.array:
@@ -67,6 +73,7 @@ def flip_rotate(image: np.array) -> np.array:
     image = np.fliplr(image)
     image = np.rot90(image)
     return image
+
 
 def matriz_confusion_binaria(y_test, y_pred):
     tp = 0
@@ -84,104 +91,112 @@ def matriz_confusion_binaria(y_test, y_pred):
                 fp += 1
             else:
                 tn += 1
-    
+
     return tp, tn, fp, fn
 
+
 def accuracy_score(tp, tn, fp, fn):
-    acc = (tp+tn)/(tp+tn+fp+fn) if (tp+tn)>0 else 0
+    acc = (tp + tn) / (tp + tn + fp + fn) if (tp + tn) > 0 else 0
     return acc
 
+
 def precision_score(tp, tn, fp, fn):
-    prec = tp/(tp+fp) if tp>0 else 0
+    prec = tp / (tp + fp) if tp > 0 else 0
     return prec
 
+
 def recall_score(tp, tn, fp, fn):
-    rec = tp/(tp+fn) if tp>0 else 0
+    rec = tp / (tp + fn) if tp > 0 else 0
     return rec
+
 
 def f1_score(tp, tn, fp, fn):
     prec = precision_score(tp, tn, fp, fn)
     rec = recall_score(tp, tn, fp, fn)
-    f1 = 2*prec*rec/(prec+rec) if prec*rec>0 else 0
+    f1 = 2 * prec * rec / (prec + rec) if prec * rec > 0 else 0
     return f1
+
 
 def calidad_modelo(y_test, y_pred):
     tp, tn, fp, fn = matriz_confusion_binaria(y_test, y_pred)
-    
+
     acc = accuracy_score(tp, tn, fp, fn)
-    print('Accuracy:', acc)
-    
+    print("Accuracy:", acc)
+
     prec = precision_score(tp, tn, fp, fn)
-    print('Precision:', prec)
-    
+    print("Precision:", prec)
+
     rcll = recall_score(tp, tn, fp, fn)
-    print('Recall', rcll)
-    
+    print("Recall", rcll)
+
     f1 = f1_score(tp, tn, fp, fn)
-    print('F1:', f1)
-    
-    matrx_conf = np.array([[tp,fn],[fp,tn]])
-    print('Matriz de confusión binaria:')
+    print("F1:", f1)
+
+    matrx_conf = np.array([[tp, fn], [fp, tn]])
+    print("Matriz de confusión binaria:")
     print(matrx_conf)
-    
+
     return matrx_conf, acc, prec, rcll, f1
 
+
 def matriz_conf_bin_multiclass(classes, y_test, y_pred):
-    '''
+    """
     input:
         classes: lista de categorias que podría tomar la predicción
         y_test: series con las categorias reales de cada fila
         y_pred: array con las categorías predecidas de cada fila
-        
+
     output:
         res: dataFrame de dimension nxn, n el numero de clases donde cada
              res[i,j] representa cuántos "i" fueron predecidos como "j", con
              i, j las categorias en las posiciones i, j de clases, respectivamente
-    '''
+    """
     res = pd.DataFrame(index=classes, columns=classes)
     res = res.fillna(0)
-    
+
     for i in range(len(y_test)):
         res.loc[y_test.iloc[i], y_pred[i]] += 1
-    
+
     return res
 
+
 def recall_score_multiclass(cat, confusion_matrix):
-    '''
+    """
     input:
         cat: string, nombre de la categoria que puntuar
         confusion_matrix: dataFrame, matriz de confusion binaria
     output:
         res: float, puntaje recall de la clase
-    '''
-    casos = confusion_matrix.loc[cat] #Tomo fila
+    """
+    casos = confusion_matrix.loc[cat]  # Tomo fila
     casos = casos.sum()
-    
-    aciertos = confusion_matrix.loc[cat,cat]
-    
+
+    aciertos = confusion_matrix.loc[cat, cat]
+
     res = 1
-    
+
     if casos > 0:
         res = aciertos / casos
 
     return res
 
+
 def precision_score_multiclass(cat, confusion_matrix):
-    '''
+    """
     input:
         cat: string, nombre de la categoria que puntuar
         confusion_matrix: dataFrame, matriz de confusion binaria
     output:
         res: float, puntaje precision de la clase
-    '''
-    casos = confusion_matrix[cat] #Tomo columna
+    """
+    casos = confusion_matrix[cat]  # Tomo columna
     casos = casos.sum()
-    
-    aciertos = confusion_matrix.loc[cat,cat]
-    
+
+    aciertos = confusion_matrix.loc[cat, cat]
+
     res = 1
 
     if casos > 0:
         res = aciertos / casos
-    
+
     return res
