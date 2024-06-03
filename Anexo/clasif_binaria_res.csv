@@ -1,45 +1,53 @@
 ,Atributos,N_neighbors,Accuracy,Matriz confusión,Precisión,Recall,F1
-0,Pixeles no distintivos,5,0.49375,"[[711   0]
+0,Pixeles no distintivos - Hand-picked,5,0.49375,"[[711   0]
  [729   0]]",0.49375,1.0,0.66109
-1,Pixeles no distintivos,15,0.49375,"[[711   0]
+1,Pixeles no distintivos - Hand-picked,15,0.49375,"[[711   0]
  [729   0]]",0.49375,1.0,0.66109
-2,Media en A muy superior,5,0.95694,"[[693  18]
- [ 44 685]]",0.9403,0.97468,0.95718
-3,Media en A muy superior,15,0.94931,"[[694  17]
+2,Media en A muy superior - Hand-picked,5,0.95625,"[[692  19]
+ [ 44 685]]",0.94022,0.97328,0.95646
+3,Media en A muy superior - Hand-picked,15,0.94931,"[[694  17]
  [ 56 673]]",0.92533,0.97609,0.95003
-4,Media en L muy superior,5,0.85556,"[[598 113]
- [ 95 634]]",0.86291,0.84107,0.85185
-5,Media en L muy superior,15,0.85972,"[[593 118]
- [ 84 645]]",0.87592,0.83404,0.85447
-6,No hay gran diferencia en medias,5,0.8125,"[[584 127]
- [143 586]]",0.8033,0.82138,0.81224
-7,No hay gran diferencia en medias,15,0.81736,"[[599 112]
- [151 578]]",0.79867,0.84248,0.81999
-8,Hay gran diferencia en medias,5,0.96875,"[[695  16]
+4,Media en L muy superior - Hand-picked,5,0.85486,"[[597 114]
+ [ 95 634]]",0.86272,0.83966,0.85103
+5,Media en L muy superior - Hand-picked,15,0.86181,"[[595 116]
+ [ 83 646]]",0.87758,0.83685,0.85673
+6,No hay gran diferencia en medias - Hand-picked,5,0.81181,"[[581 130]
+ [141 588]]",0.80471,0.81716,0.81089
+7,No hay gran diferencia en medias - Hand-picked,15,0.81736,"[[598 113]
+ [150 579]]",0.79947,0.84107,0.81974
+8,Top 3 dif. de medias,5,0.96875,"[[695  16]
  [ 29 700]]",0.95994,0.9775,0.96864
-9,Hay gran diferencia en medias,15,0.97222,"[[701  10]
- [ 30 699]]",0.95896,0.98594,0.97226
-10,Hay gran diferencia en medianas,5,0.8625,"[[616  95]
- [103 626]]",0.85675,0.86639,0.86154
-11,Hay gran diferencia en medianas,15,0.85764,"[[596 115]
- [ 90 639]]",0.8688,0.83826,0.85326
-12,Media muy superior en A + No significativos,5,0.95694,"[[693  18]
- [ 44 685]]",0.9403,0.97468,0.95718
-13,Media muy superior en A + No significativos,15,0.94931,"[[694  17]
- [ 56 673]]",0.92533,0.97609,0.95003
-14,Media en A muy superior + Media en L muy superior,5,0.96319,"[[692  19]
- [ 34 695]]",0.95317,0.97328,0.96312
-15,Media en A muy superior + Media en L muy superior,15,0.95764,"[[691  20]
- [ 41 688]]",0.94399,0.97187,0.95773
-16,Hay gran diferencia en medias - 6 atributos,5,0.97639,"[[698  13]
+9,Top 3 dif. de medias,15,0.97153,"[[700  11]
+ [ 30 699]]",0.9589,0.98453,0.97155
+10,Top 3 dif. de medianas,5,0.86042,"[[607 104]
+ [ 97 632]]",0.86222,0.85373,0.85795
+11,Top 3 dif. de medianas,15,0.85833,"[[595 116]
+ [ 88 641]]",0.87116,0.83685,0.85366
+12,Media en A muy superior + Media en L muy superior - Hand-picked,5,0.9625,"[[692  19]
+ [ 35 694]]",0.95186,0.97328,0.96245
+13,Media en A muy superior + Media en L muy superior - Hand-picked,15,0.95833,"[[691  20]
+ [ 40 689]]",0.94528,0.97187,0.95839
+14,Top 6 dif. de medias,5,0.97639,"[[698  13]
  [ 21 708]]",0.97079,0.98172,0.97622
-17,Hay gran diferencia en medias - 6 atributos,15,0.97639,"[[701  10]
+15,Top 6 dif. de medias,15,0.97639,"[[701  10]
  [ 24 705]]",0.9669,0.98594,0.97632
-18,Hay gran diferencia en medias - 10 atributos,5,0.97986,"[[698  13]
+16,Top 10 dif. de medias,5,0.97986,"[[698  13]
  [ 16 713]]",0.97759,0.98172,0.97965
-19,Hay gran diferencia en medias - 10 atributos,15,0.98056,"[[700  11]
+17,Top 10 dif. de medias,15,0.98056,"[[700  11]
  [ 17 712]]",0.97629,0.98453,0.98039
-20,Hay gran diferencia en medias o en medianas - 10 atributos,5,0.97222,"[[702   9]
+18,Top 6 dif. de medianas,5,0.96667,"[[702   9]
+ [ 39 690]]",0.94737,0.98734,0.96694
+19,Top 6 dif. de medianas,15,0.95972,"[[703   8]
+ [ 50 679]]",0.9336,0.98875,0.96038
+20,Top 10 dif. de medianas,5,0.97014,"[[705   6]
+ [ 37 692]]",0.95013,0.99156,0.97041
+21,Top 10 dif. de medianas,15,0.96042,"[[705   6]
+ [ 51 678]]",0.93254,0.99156,0.96115
+22,Top 5 dif. de medias + Top 5 dif. de medianas,5,0.97222,"[[702   9]
  [ 31 698]]",0.95771,0.98734,0.9723
-21,Hay gran diferencia en medias o en medianas - 10 atributos,15,0.96528,"[[703   8]
+23,Top 5 dif. de medias + Top 5 dif. de medianas,15,0.96528,"[[703   8]
  [ 42 687]]",0.94362,0.98875,0.96566
+24,10 atributos Hand-picked de distintas regiones,5,0.96319,"[[705   6]
+ [ 47 682]]",0.9375,0.99156,0.96377
+25,10 atributos Hand-picked de distintas regiones,15,0.95833,"[[705   6]
+ [ 54 675]]",0.92885,0.99156,0.95918
