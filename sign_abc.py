@@ -7,6 +7,8 @@ Created on Fri May 24 2024
 @author: Equipo 2 (ABC)
 
 """
+# script para plotear letras
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -22,15 +24,16 @@ from sklearn.model_selection import KFold
 # Carga
 data = pd.read_csv("emnist_letters_tp.csv", header=None, index_col=0)
 
+# %%
+# print(data.max(axis='columns').sort_values(ascending=True))  # Todas las obs. tienen max = 255, asi que normalizarlo es dividir x 255
+# data = data / 255 # Normalizo los datos
+
 # %%######
 data.head()
 print(data.index.value_counts().sort_index())
 # Observamos que esta balanceado, 2400 ocurrencias de cada una de las 26 letras (alfabeto ingles)
 # Index = etiqueta, el resto intensidades de pixeles
 # 28x28 = 784 pixeles
-
-# Observamos que está normalizado: todas las letras tienen su maximo en 255
-print(data.max(axis=1).describe())
 
 # %%######
 img = fx.show_image_from_data(26, data)  # Es una Y
@@ -41,14 +44,13 @@ img = fx.show_image_from_data(26, data)  # Es una Y
 # Quiero ver si en los datos originales van en filas o en columnas
 # (o sea, si los primeros 28 son la primer fila o la primer columna)
 
-fig, ax = plt.subplots(figsize=(4, 6))
-ax.plot(img[4], "o-.", color="#D67236")
-ax.set_xlabel("Posición")
-ax.set_ylabel("Intensidad")
-ax.set_title("Intensidad de la Fila 4 de la Fig. 2 (id: 26)")
-ax.grid(axis="y", linewidth=0.5)
+plt.plot(img[4], "o-.", color="#D67236")
+plt.xlabel("Posición")
+plt.ylabel("Intensidad")
+plt.title("Intensidad de la Fila 4 de la Fig. 2 (id: 26)")
+plt.grid(axis="y", linewidth=0.5)
 plt.gcf().set_size_inches(4, 6)
-plt.show()
+
 # Se ve que tiene dos picos: o sea, img[4] representa una fila
 
 data.iloc[26][28 * 4 : 28 * 5].reset_index(drop=True).plot(
@@ -117,45 +119,6 @@ plot_medianas = fx.show_image(
 # Todas las letras tienen más pixeles vacíos que ocupados, tiene sentido
 # que la mediana de menor a la media, ya que los valores altos van a pesar más.
 
-# %%###
-# # Veamos histogramas para algunos pixeles
-# Por ejemplo, el pixel 14,14 (uno de los que tienen mayor intensidad mediana)
-data["col_20_row_5"].plot(kind='hist', density=True, bins=20, color="#D67236", edgecolor='k', title="Intensidad del Pixel en Col. 20 y Fila 5 (todas las letras)", label="Frecuencia")
-plt.axvline(data["col_20_row_5"].mean(), color="k", linestyle="dashed", linewidth=1, label="Media")
-plt.axvline(data["col_20_row_5"].median(), color="blue", linestyle="dashed", linewidth=1, label='Mediana')
-plt.xlabel("Intensidad")
-plt.ylabel("Frecuencia relativa")
-plt.ylim(0, 0.06)
-plt.legend()
-plt.show()
-
-data["col_13_row_14"].plot(kind='hist', density=True, bins=20, color="#D67236", edgecolor='k', title="Intensidad del Pixel en Col. 14 y Fila 15 (todas las letras)", label="Frecuencia")
-plt.axvline(data["col_13_row_14"].mean(), color="k", linestyle="dashed", linewidth=1, label="Media")
-plt.axvline(data["col_13_row_14"].median(), color="blue", linestyle="dashed", linewidth=1, label='Mediana')
-plt.xlabel("Intensidad")
-plt.ylabel("Frecuencia relativa")
-plt.ylim(0, 0.06)
-plt.legend()
-plt.show()
-
-data["col_6_row_8"].plot(kind='hist', density=True, bins=20, color="#D67236", edgecolor='k', title="Intensidad del Pixel en Col. 6 y Fila 8 (todas las letras)", label="Frecuencia")
-plt.axvline(data["col_6_row_8"].mean(), color="k", linestyle="dashed", linewidth=1, label="Media")
-plt.axvline(data["col_6_row_8"].median(), color="blue", linestyle="dashed", linewidth=1, label='Mediana')
-plt.xlabel("Intensidad")
-plt.ylabel("Frecuencia relativa")
-plt.ylim(0, 0.06)
-plt.legend()
-plt.show()
-
-data["col_15_row_10"].plot(kind='hist', density=True, bins=20, color="#D67236", edgecolor='k', title="Intensidad del Pixel en Col. 15 y Fila 10 (todas las letras)", label="Frecuencia")
-plt.axvline(data["col_15_row_10"].mean(), color="k", linestyle="dashed", linewidth=1, label="Media")
-plt.axvline(data["col_15_row_10"].median(), color="blue", linestyle="dashed", linewidth=1, label='Mediana')
-plt.xlabel("Intensidad")
-plt.ylabel("Frecuencia relativa")
-plt.ylim(0, 0.06)
-plt.legend()
-plt.show()
-
 # %%######
 # Veamos cuales son los pixeles con mayor intensidad media
 top_medianas = medianas.sort_values(ascending=False).head(10)
@@ -172,8 +135,6 @@ top_medianas.plot(
     ylabel="Intensidad Mediana",
     title="Top 10 de Intensidad Mediana de los Pixeles",
     rot=0,
-    color="#D67236",
-    edgecolor='black'
 )
 
 # Se ve que los principales son los de la parte central de las letras
@@ -224,56 +185,33 @@ for i in range(len(medias_por_letra)):
 # Llama la atencion que el grafico de la e sea parecido al de la mediana general,
 # pero mas comprimido
 
-
-
 # %%###
 # Para estimar la dificultad de diferenciar 2 letras calculamos la diferencia de sus "firmas" en media y mediana
-dif_media_EL = medias_por_letra[1] - medias_por_letra[0]
-fx.show_image(dif_media_EL.values, title="Diferencia de la Media entre 'E' y 'L'", vmax=255, vmin=-255)
+dif_media_EL = np.abs(medias_por_letra[1] - medias_por_letra[0])
+fx.show_image(dif_media_EL.values, title="Distancia de la Media entre 'E' y 'L'", vmax=255)
 
-dif_mediana_EL = medianas_por_letra[1] - medianas_por_letra[0]
-fx.show_image(dif_mediana_EL.values, title="Diferencia de la Mediana entre 'E' y 'L'", vmax=255, vmin=-255)
+dif_media_EM = np.abs(medias_por_letra[1] - medias_por_letra[2])
+fx.show_image(dif_media_EM.values, title="Distancia de la Media entre 'E' y 'M'", vmax=255)
 
-dif_media_EM = medias_por_letra[1] - medias_por_letra[2]
-fx.show_image(dif_media_EM.values, title="Diferencia de la Media entre 'E' y 'M'", vmax=255, vmin=-255)
+dif_mediana_EL = np.abs(medianas_por_letra[1] - medianas_por_letra[0])
+fx.show_image(dif_mediana_EL.values, title="Distancia de la Mediana entre 'E' y 'L'", vmax=255)
 
-dif_mediana_EM = medianas_por_letra[1] - medianas_por_letra[2]
-fx.show_image(dif_mediana_EM.values, title="Diferencia de la Mediana entre 'E' y 'M'", vmax=255, vmin=-255)
+dif_mediana_EM = np.abs(medianas_por_letra[1] - medianas_por_letra[2])
+fx.show_image(dif_mediana_EM.values, title="Distancia de la Mediana entre 'E' y 'M'", vmax=255)
 
-dif_mediana_LI = medianas_por_letra[0] - medianas_por_letra[3]
-fx.show_image(dif_mediana_LI.values, title="Diferencia de la Mediana entre 'L' y 'I'", vmax=255, vmin=-255)
+# %%###
+print(f"Media de la distancia entre medias de 'E' y 'L' = {dif_media_EL.mean()}")
+print(f"Media de la distancia entre medias de 'E' y 'M' = {dif_media_EM.mean()}")
+print(f"Media de la distancia entre medianas de 'E' y 'L' = {dif_mediana_EL.mean()}")
+print(f"Media de la distancia entre medianas de 'E' y 'M' = {dif_mediana_EM.mean()}")
 
-dif_media_LI = medias_por_letra[0] - medias_por_letra[3]
-fx.show_image(dif_media_LI.values, title="Diferencia de la Media entre 'L' y 'I'", vmax=255, vmin=-255)
-
-
-dif_mediana_EI = medianas_por_letra[1] - medianas_por_letra[3]
-fx.show_image(dif_mediana_EI.values, title="Diferencia de la Mediana entre 'E' y 'I'", vmax=255, vmin=-255)
-
-dif_media_EI = medias_por_letra[1] - medias_por_letra[3]
-fx.show_image(dif_media_EI.values, title="Diferencia de la Media entre 'E' y 'I'", vmax=255, vmin=-255)
-
-### ¿queremos mostrar las diferencias de las medias?
-### creo que conviene solo mostrar que las diferencias de medianas son mas dispersas
-
-print(f"Desvío de la diferencia de medias entre 'E' y 'L' = {dif_media_EL.std()}")
-print(f"Desvío de la diferencia de medianas entre 'E' y 'L' = {dif_mediana_EL.std()}")
-print(f"Desvío de la diferencia de medias entre 'E' y 'M' = {dif_media_EM.std()}")
-print(f"Desvío de la diferencia de medianas entre 'E' y 'M' = {dif_mediana_EM.std()}")
-print(f"Desvío de la diferencia de medias entre 'I' y 'L' = {dif_media_LI.std()}")
-print(f"Desvío de la diferencia de medianas entre 'I' y 'L' = {dif_mediana_LI.std()}")
-print(f"Desvío de la diferencia de medias entre 'E' y 'I' = {dif_media_EI.std()}")
-print(f"Desvío de la diferencia de medianas entre 'E' y 'I' = {dif_mediana_EI.std()}")
-      
-
-# print(f"Media de la diferencia entre medianas de 'E' y 'L' = {(dif_mediana_EL.abs().mean())}")
-# print(f"Media de la diferencia entre medias de 'E' y 'L' = {(dif_media_EL.abs().mean())}")
-# print(f"Media de la diferencia entre medianas de 'E' y 'M' = {(dif_mediana_EM.abs().mean())}")
-# print(f"Media de la diferencia entre medias de 'E' y 'M' = {(dif_media_EM.abs().mean())}")
-# print(f"Media de la diferencia entre medianas de 'I' y 'L' = {(dif_mediana_LI.abs().mean())}")
-# print(f"Media de la diferencia entre medias de 'I' y 'L' = {(dif_media_LI.abs().mean())}")
 # Con ambos criterios (media y mediana) pacece a priori mas facil distinguir 'E' de 'M' que 'E' de 'L'
-
+# %%###
+# # Veamos histogramas para algunos pixeles
+# Por ejemplo, el pixel 14,14 (uno de los que tienen mayor intensidad mediana)
+data["col_20_row_5"].hist(bins=20)
+plt.axvline(data["col_20_row_5"].mean(), color="k", linestyle="dashed", linewidth=1)
+plt.axvline(data["col_20_row_5"].median(), color="r", linestyle="dashed", linewidth=1)
 
 # %%######
 # Para analizar la dispersion de alguna de las clases, veamos el desvio estandar
@@ -285,6 +223,7 @@ c_plot = fx.show_image(
 
 # El desvio en una letra "facil" como la C esta bastante concentrado en la forma de la letra
 
+# %%######
 T = data.loc["T"]
 T_std = T.std()
 t_plot = fx.show_image(
@@ -293,16 +232,11 @@ t_plot = fx.show_image(
 
 # El desvio aca se reparte mucho mas, ya que la T tiene una forma mas irregular
 
+# %%######
 A = data.loc["A"]
 A_std = A.std()
 a_plot = fx.show_image(
     A_std.values, title="Desvio de la Intensidad de cada Pixel - A", vmax=255
-)
-
-I = data.loc["I"]
-I_std = I.std()
-I_plot = fx.show_image(
-    I_std.values, title="Desvio de la Intensidad de cada Pixel - I", vmax=255
 )
 
 # idem con la a
@@ -485,6 +419,10 @@ for _ , row in eval_ej2.iterrows():
 # En nuestra ejecucion la mejor exactitud (0.9736) la logramos usando
 # los 10 pixeles con mayor diferencia entre medias y 5 vecinos
 
+#%%
+# Guardamos los resultados en el anexo
+eval_ej2.to_csv('./Anexo/clasif_binaria_res.csv')
+
 # %%##########################################################################
 #######       Seccion 3: Clasificación multiclase de vocales con árboles de de decisión
 
@@ -526,12 +464,12 @@ for i, (train_index, test_index) in enumerate(kf.split(X_dev)):
 
         res_acc_gini[i, j] = metrics.accuracy_score(kf_y_test, pred)
 
-        matrx_conf_train = fx.matriz_conf_bin_multiclass(letras, kf_y_test, pred)
+        matrx_conf = fx.matriz_conf_bin_multiclass(letras, kf_y_test, pred)
         for k in range(5):
             res_prec_gini[i, j, k] = fx.precision_score_multiclass(
-                letras[k], matrx_conf_train
+                letras[k], matrx_conf
             )
-            res_rcll_gini[i, j, k] = fx.recall_score_multiclass(letras[k], matrx_conf_train)
+            res_rcll_gini[i, j, k] = fx.recall_score_multiclass(letras[k], matrx_conf)
             
         arbol = tree.DecisionTreeClassifier(criterion='entropy', max_depth=hmax, random_state=1) # Fijamos semilla
         arbol.fit(kf_X_train, kf_y_train)
@@ -542,7 +480,7 @@ for i, (train_index, test_index) in enumerate(kf.split(X_dev)):
         matrx_conf = fx.matriz_conf_bin_multiclass(letras, kf_y_test, pred)
         for k in range(5):
             res_prec_entrpy[i, j, k] = fx.precision_score_multiclass(
-                letras[k], matrx_conf_train
+                letras[k], matrx_conf
             )
             res_rcll_entrpy[i, j, k] = fx.recall_score_multiclass(letras[k], matrx_conf)
 
@@ -760,4 +698,11 @@ performance['Promedio de recall'] /= 5
 
 print('Promedio de precision:', performance['Promedio de precision'])
 print('Promedio de recall:', performance['Promedio de recall'], '\n')
+
+performance = pd.concat([pd.Series(data=best_hyperparam),performance])
+
+#%%
+# Guardamos resultados en el anexo
+metricas_train.to_csv('./Anexo/clasif_multi_train_res.csv')
+performance.to_csv('./Anexo/clasif_multi_best_tree.csv')
 

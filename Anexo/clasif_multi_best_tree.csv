@@ -1,0 +1,16 @@
+,0
+criterio,gini
+altura,8
+Accuracy,0.9161111111111111
+Promedio de precision,0.9167044988640118
+Promedio de recall,0.9167940296795798
+Precision letra A,0.9016172506738545
+Recall letra A,0.8943850267379679
+Precision letra E,0.9087248322147651
+Recall letra E,0.9002659574468085
+Precision letra I,0.9543446244477173
+Recall letra I,0.9432314410480349
+Precision letra O,0.9199438202247191
+Recall letra O,0.9383954154727794
+Precision letra U,0.8988919667590027
+Recall letra U,0.9076923076923077
