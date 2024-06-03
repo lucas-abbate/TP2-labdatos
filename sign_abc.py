@@ -421,6 +421,7 @@ for _ , row in eval_ej2.iterrows():
 
 #%%
 # Guardamos los resultados en el anexo
+eval_ej2 = eval_ej2.round(5) # Redondeo para que sea más legible
 eval_ej2.to_csv('./Anexo/clasif_binaria_res.csv')
 
 # %%##########################################################################
@@ -699,10 +700,12 @@ performance['Promedio de recall'] /= 5
 print('Promedio de precision:', performance['Promedio de precision'])
 print('Promedio de recall:', performance['Promedio de recall'], '\n')
 
-performance = pd.concat([pd.Series(data=best_hyperparam),performance])
-
 #%%
 # Guardamos resultados en el anexo
+metricas_train = metricas_train.round(5) # Redondeo para que sea más legible
 metricas_train.to_csv('./Anexo/clasif_multi_train_res.csv')
+
+performance = performance.round(5) # Redondeo para que sea más legible
+performance = pd.concat([pd.Series(data=best_hyperparam),performance])
 performance.to_csv('./Anexo/clasif_multi_best_tree.csv')
 
