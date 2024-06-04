@@ -16,7 +16,7 @@ Este archivo:
     bajo distintas selecciones de atributos, obteniendo métricas binarias que permiten compararlos.
     
      Sección 3: Separa la base en conjuntos de train y test para las vocales, ajustando árboles de decisión
-    mediante KFolding a distintos hiperparámetros d´e altura y criterio. Luego los compara bajo 
+    mediante KFolding a distintos hiperparámetros de altura y criterio. Luego los compara bajo 
     distintas métricas multiclase. Al mejor de ellos, lo entrana bajo el conjunto de train y evalúa
     su performance en el conjunto de test.
 """
@@ -166,7 +166,7 @@ for pixel in ["col_20_row_5", "col_13_row_14", "col_6_row_8", "col_15_row_10"]:
     plt.show()
 
 # %%######
-# Veamos cuales son los pixeles con mayor intensidad media
+# Veamos cuales son los pixeles con mayor intensidad mediana
 top_medianas = medianas.sort_values(ascending=False).head(10)
 top_medianas = top_medianas.rename(
     index={
@@ -312,7 +312,7 @@ print(f"Desvío de la diferencia de medias entre 'E' y 'I' = {dif_media_EI.std()
 print(f"Desvío de la diferencia de medianas entre 'E' y 'I' = {dif_mediana_EI.std()}")
 # %%###
 # ¿Qué es más fácil de diferenciar: las imágenes correspondientes a la letra E de
-# las correspondientes a la L, o la letra E de la M?
+# las correspondientes a la L, la letra E de la M o la L de la I?
 
 print(
     f"Media de la distancia entre medias de 'E' y 'L' = {np.abs(dif_media_EL).mean()}"
@@ -334,6 +334,7 @@ print(
 )
 
 # Con ambos criterios (media y mediana) pacece a priori mas facil distinguir 'E' de 'M' que 'E' de 'L'
+# y lo mas dificil parece ser distinguir la L de la I (lo que es bastante intuitivo)
 # %%######
 # Para analizar la dispersion de alguna de las clases, veamos el desvio estandar
 C = data.loc["C"]
@@ -344,7 +345,6 @@ c_plot = fx.show_image(
 
 # El desvio en una letra "facil" como la C esta bastante concentrado en la forma de la letra
 
-# %%######
 T = data.loc["T"]
 T_std = T.std()
 t_plot = fx.show_image(
@@ -353,14 +353,12 @@ t_plot = fx.show_image(
 
 # El desvio aca se reparte mucho mas, ya que la T tiene una forma mas irregular
 
-# %%######
 A = data.loc["A"]
 A_std = A.std()
 a_plot = fx.show_image(
     A_std.values, title="Desvio de la Intensidad de cada Pixel - A", vmax=255
 )
 
-# %%
 I = data.loc["I"]
 I_std = I.std()
 I_plot = fx.show_image(
