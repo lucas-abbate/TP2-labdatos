@@ -246,7 +246,17 @@ print(f"Desvío de la diferencia de medianas entre 'E' y 'M' = {dif_mediana_EM.s
 print(f"Desvío de la diferencia de medias entre 'I' y 'L' = {dif_media_LI.std()}")
 print(f"Desvío de la diferencia de medianas entre 'I' y 'L' = {dif_mediana_LI.std()}")
 print(f"Desvío de la diferencia de medias entre 'E' y 'I' = {dif_media_EI.std()}")
-print(f"Desvío de la diferencia de medianas entre 'E' y 'I' = {dif_mediana_EI.std()}")# Con ambos criterios (media y mediana) pacece a priori m
+print(f"Desvío de la diferencia de medianas entre 'E' y 'I' = {dif_mediana_EI.std()}")
+# %%###
+# ¿Qué es más fácil de diferenciar: las imágenes correspondientes a la letra E de
+# las correspondientes a la L, o la letra E de la M?
+
+print(f"Media de la distancia entre medias de 'E' y 'L' = {np.abs(dif_media_EL).mean()}")
+print(f"Media de la distancia entre medias de 'E' y 'M' = {np.abs(dif_media_EM).mean()}")
+print(f"Media de la distancia entre medianas de 'E' y 'L' = {np.abs(dif_mediana_EL).mean()}")
+print(f"Media de la distancia entre medianas de 'E' y 'M' = {np.abs(dif_mediana_EM).mean()}")
+
+# Con ambos criterios (media y mediana) pacece a priori mas facil distinguir 'E' de 'M' que 'E' de 'L'
 # %%######
 # Para analizar la dispersion de alguna de las clases, veamos el desvio estandar
 C = data.loc["C"]
