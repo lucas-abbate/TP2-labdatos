@@ -2,12 +2,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 24 2024
+Grupo: Equipo 2 (ABC)
+Miembros:
+    Abbate, Lucas Ignacio (134/21)
+    Becker, Guillermo (616/90)
+    Cevasco Rieck, Jorge Augusto (230/23)
 
-@author: Equipo 2 (ABC)
-
+Este archivo:
+     Sección 1: Explora los datos disponibles en la base de datos emnist_letters_tp.csv, mostrando diferencias 
+    y similitudes entre las distintas letras mediante gráficos y comparaciones.
+    
+     Sección 2: Separa la base en conjuntos de train y test para las letras L y A, ajustando modelos de KNN 
+    bajo distintas selecciones de atributos, obteniendo métricas binarias que permiten compararlos.
+    
+     Sección 3: Separa la base en conjuntos de train y test para las vocales, ajustando árboles de decisión
+    mediante KFolding a distintos hiperparámetros d´e altura y criterio. Luego los compara bajo 
+    distintas métricas multiclase. Al mejor de ellos, lo entrana bajo el conjunto de train y evalúa
+    su performance en el conjunto de test.
 """
-# script para plotear letras
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -19,17 +31,13 @@ from sklearn import metrics, tree
 from sklearn.model_selection import KFold
 from tqdm.auto import tqdm
 
-# %%##########################################################################
-#######       Seccion 1:   análisis exploratorio de datos
-
+#%%
 # Carga
 data = pd.read_csv("emnist_letters_tp.csv", header=None, index_col=0)
 
-# %%
-# print(data.max(axis='columns').sort_values(ascending=True))  # Todas las obs. tienen max = 255, asi que normalizarlo es dividir x 255
-# data = data / 255 # Normalizo los datos
+# %%##########################################################################
+#######       Seccion 1:   análisis exploratorio de datos
 
-# %%######
 data.head()
 print(data.index.value_counts().sort_index())
 # Observamos que esta balanceado, 2400 ocurrencias de cada una de las 26 letras (alfabeto ingles)
@@ -553,8 +561,10 @@ for atr, caso in zip(atr_x_caso, casos):
         Y_pred = model.predict(
             X_test[atr]
         )  # me fijo qué clases les asigna el modelo a mis datos
-
+        
+        print('Caso:', caso)
         matrx, acc, prec, rcll, f1 = fx.calidad_modelo(Y_test, Y_pred)
+        print()
 
         eval_ej2.loc[len(eval_ej2)] = [caso, vecinos, acc, matrx, prec, rcll, f1]
 
