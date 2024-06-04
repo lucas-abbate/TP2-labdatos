@@ -125,43 +125,21 @@ plot_medianas = fx.show_image(
 # que la mediana de menor a la media, ya que los valores altos van a pesar más.
 # %%###
 # # Veamos histogramas para algunos pixeles
-# Por ejemplo, el pixel 14,14 (uno de los que tienen mayor intensidad mediana)
-data["col_20_row_5"].plot(kind='hist', density=True, bins=20, color="#D67236", edgecolor='k', title="Intensidad del Pixel en Col. 20 y Fila 5 (todas las letras)", label="Frecuencia")
-plt.axvline(data["col_20_row_5"].mean(), color="k", linestyle="dashed", linewidth=1, label="Media")
-plt.axvline(data["col_20_row_5"].median(), color="blue", linestyle="dashed", linewidth=1, label='Mediana')
-plt.xlabel("Intensidad")
-plt.ylabel("Frecuencia relativa")
-plt.ylim(0, 0.06)
-plt.legend()
-plt.show()
-
-data["col_13_row_14"].plot(kind='hist', density=True, bins=20, color="#D67236", edgecolor='k', title="Intensidad del Pixel en Col. 14 y Fila 15 (todas las letras)", label="Frecuencia")
-plt.axvline(data["col_13_row_14"].mean(), color="k", linestyle="dashed", linewidth=1, label="Media")
-plt.axvline(data["col_13_row_14"].median(), color="blue", linestyle="dashed", linewidth=1, label='Mediana')
-plt.xlabel("Intensidad")
-plt.ylabel("Frecuencia relativa")
-plt.ylim(0, 0.06)
-plt.legend()
-plt.show()
-
-data["col_6_row_8"].plot(kind='hist', density=True, bins=20, color="#D67236", edgecolor='k', title="Intensidad del Pixel en Col. 6 y Fila 8 (todas las letras)", label="Frecuencia")
-plt.axvline(data["col_6_row_8"].mean(), color="k", linestyle="dashed", linewidth=1, label="Media")
-plt.axvline(data["col_6_row_8"].median(), color="blue", linestyle="dashed", linewidth=1, label='Mediana')
-plt.xlabel("Intensidad")
-plt.ylabel("Frecuencia relativa")
-plt.ylim(0, 0.06)
-plt.legend()
-plt.show()
-
-data["col_15_row_10"].plot(kind='hist', density=True, bins=20, color="#D67236", edgecolor='k', title="Intensidad del Pixel en Col. 15 y Fila 10 (todas las letras)", label="Frecuencia")
-plt.axvline(data["col_15_row_10"].mean(), color="k", linestyle="dashed", linewidth=1, label="Media")
-plt.axvline(data["col_15_row_10"].median(), color="blue", linestyle="dashed", linewidth=1, label='Mediana')
-plt.xlabel("Intensidad")
-plt.ylabel("Frecuencia relativa")
-plt.ylim(0, 0.06)
-plt.legend()
-plt.show()
-
+# Por ejemplo, el pixel 13,14 (uno de los que tienen mayor intensidad mediana)
+for pixel in ["col_20_row_5", "col_13_row_14", "col_6_row_8", "col_15_row_10"]:
+    col = pixel.split('_')[1]
+    row = pixel.split('_')[3]
+    data[pixel].plot(kind='hist', density=False, bins=20, color="#D67236", edgecolor='k', 
+                     title=f'Intensidad del Pixel en Col. {col} y Fila {row} (todas las letras)',
+                     label="Frecuencia",
+                     weights = np.ones_like(data.index) / len(data.index))
+    plt.axvline(data[pixel].mean(), color="k", linestyle="dashed", linewidth=1, label="Media")
+    plt.axvline(data[pixel].median(), color="blue", linestyle="dashed", linewidth=1, label='Mediana')
+    plt.xlabel("Intensidad")
+    plt.ylabel("Frecuencia Relativa")
+    plt.ylim(0, 0.75)
+    plt.legend()
+    plt.show()
 
 # %%######
 # Veamos cuales son los pixeles con mayor intensidad media
